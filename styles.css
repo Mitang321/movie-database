@@ -1,0 +1,39 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+}
+
+.container {
+  width: 80%;
+  margin: 20px auto;
+  max-width: 1200px;
+}
+
+#search {
+  margin-bottom: 20px;
+}
+
+.movie {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.movie img {
+  max-width: 150px;
+  margin-right: 20px;
+}
+
+.movie-details {
+  display: none;
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  background-color: #fff;
+}
