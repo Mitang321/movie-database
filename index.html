@@ -17,9 +17,34 @@
         />
         <button id="searchButton">Search</button>
       </div>
+      <div id="filter">
+        <select id="filterGenre">
+          <option value="">All Genres</option>
+          <option value="Action">Action</option>
+          <option value="Comedy">Comedy</option>
+          <option value="Drama">Drama</option>
+          <option value="Horror">Horror</option>
+        </select>
+      </div>
       <div id="movieList"></div>
-      <div id="movieDetails" class="movie-details"></div>
     </div>
+
+    <div id="movieModal" class="modal">
+      <div class="modal-content">
+        <span class="close-button" id="closeModal">&times;</span>
+        <div id="movieDetails"></div>
+        <div id="ratingForm">
+          <h2>Rate this Movie</h2>
+          <form id="ratingFormElement">
+            <input type="hidden" id="ratingMovieId" />
+            <label for="rating">Rating (1-5):</label>
+            <input type="number" id="rating" min="1" max="5" required />
+            <button type="submit">Submit Rating</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <script src="script.js"></script>
   </body>
 </html>
