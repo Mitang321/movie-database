@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Interactive Movie Database</title>
+    <title>Movie Database</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -16,6 +16,7 @@
           placeholder="Search for movies..."
         />
         <button id="searchButton">Search</button>
+        <button id="clearHistoryButton">Clear History</button>
       </div>
       <div id="filter">
         <select id="filterGenre">
@@ -26,7 +27,15 @@
           <option value="Horror">Horror</option>
         </select>
       </div>
+      <div id="recentSearches">
+        <h2>Recent Searches</h2>
+        <ul id="searchHistory"></ul>
+      </div>
       <div id="movieList"></div>
+      <div id="watchlistSection">
+        <h2>Watchlist</h2>
+        <ul id="watchlist"></ul>
+      </div>
     </div>
 
     <div id="movieModal" class="modal">
@@ -42,6 +51,12 @@
             frameborder="0"
             allowfullscreen
           ></iframe>
+          <p>
+            Trailer not available in the app. You can
+            <a id="trailerLink" target="_blank"
+              >search for the trailer on YouTube</a
+            >.
+          </p>
         </div>
         <div id="ratingForm">
           <h2>Rate this Movie</h2>
@@ -51,6 +66,10 @@
             <input type="number" id="rating" min="1" max="5" required />
             <button type="submit">Submit Rating</button>
           </form>
+        </div>
+        <div id="watchlistActions">
+          <button id="addToWatchlistButton">Add to Watchlist</button>
+          <button id="removeFromWatchlistButton">Remove from Watchlist</button>
         </div>
       </div>
     </div>
