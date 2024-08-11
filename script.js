@@ -1,5 +1,4 @@
-const apiKey = "2bfd72b"; // Your API key
-
+const apiKey = "2bfd72b";
 let watchlist = JSON.parse(localStorage.getItem("watchlist")) || [];
 
 document.getElementById("searchButton").addEventListener("click", function () {
@@ -47,6 +46,7 @@ function fetchMovieDetails(id) {
     .then((response) => response.json())
     .then((data) => {
       displayMovieDetails(data);
+      fetchMovieTrailer(data.Title);
     })
     .catch((error) => console.error("Error fetching details:", error));
 }
@@ -66,66 +66,23 @@ function displayMovieDetails(movie) {
   openModal();
 }
 
+function fetchMovieTrailer(title) {
+  const youtubeApiKey = "AIzaSyAwqUlLMgEWu32_APrNImWR1Px2Rais3XU";
+  fetch(
+    `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${title} trailer&type=video&key=${youtubeApiKey}`
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      const videoId = data.items[0].id.videoId;
+      document.getElementById(
+        "movieTrailer"
+      ).src = `https://www.youtube.com/embed/${videoId}`;
+    })
+    .catch((error) => console.error("Error fetching trailer:", error));
+}
+
 function openModal() {
   document.getElementById("movieModal").style.display = "block";
 }
 
-document.getElementById("closeModal").addEventListener("click", closeModal);
-
-function closeModal() {
-  document.getElementById("movieModal").style.display = "none";
-}
-
-document.getElementById("ratingFormElement").onsubmit = function (event) {
-  event.preventDefault();
-  const movieId = document.getElementById("ratingMovieId").value;
-  const rating = document.getElementById("rating").value;
-  fetch(`https://www.omdbapi.com/?i=${movieId}&apikey=${apiKey}`)
-    .then((response) => response.json())
-    .then((movie) => {
-      addToWatchlist(movie, rating);
-      closeModal();
-    })
-    .catch((error) => console.error("Error fetching details:", error));
-};
-
-function addToWatchlist(movie, rating) {
-  const watchlistItem = {
-    id: movie.imdbID,
-    title: movie.Title,
-    poster: movie.Poster,
-    rating: rating,
-  };
-
-  watchlist = watchlist.filter((item) => item.id !== watchlistItem.id);
-  watchlist.push(watchlistItem);
-  localStorage.setItem("watchlist", JSON.stringify(watchlist));
-  displayWatchlist();
-}
-
-function displayWatchlist() {
-  const watchlistItems = document.getElementById("watchlistItems");
-  watchlistItems.innerHTML = "";
-  watchlist.forEach((item) => {
-    const watchlistElement = document.createElement("div");
-    watchlistElement.className = "watchlist-item";
-    watchlistElement.innerHTML = `
-            <img src="${item.poster}" alt="${item.title}">
-            <div>
-                <h2>${item.title}</h2>
-                <p>Rating: ${item.rating}</p>
-                <button onclick="removeFromWatchlist('${item.id}')">Remove</button>
-            </div>
-        `;
-    watchlistItems.appendChild(watchlistElement);
-  });
-}
-
-function removeFromWatchlist(id) {
-  watchlist = watchlist.filter((item) => item.id !== id);
-  localStorage.setItem("watchlist", JSON.stringify(watchlist));
-  displayWatchlist();
-}
-
-// Initial call to display watchlist
-displayWatchlist();
+document.getElement;
