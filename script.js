@@ -1,23 +1,51 @@
-const apiKey = "2bfd72b"; // Your OMDB API key
-const youtubeApiKey = "AIzaSyAwqUlLMgEWu32_APrNImWR1Px2Rais3XU"; // Replace with your YouTube API key
+const apiKey = "2bfd72b";
+const youtubeApiKey = "AIzaSyAwqUlLMgEWu32_APrNImWR1Px2Rais3XU";
 
 let watchlist = JSON.parse(localStorage.getItem("watchlist")) || [];
+let userRatings = JSON.parse(localStorage.getItem("userRatings")) || {};
 
 document.getElementById("searchButton").addEventListener("click", function () {
   const searchQuery = document.getElementById("searchInput").value;
   const genreFilter = document.getElementById("filterGenre").value;
+  const yearFilter = document.getElementById("filterYear").value;
+  const ratingFilter = document.getElementById("filterRating").value;
   if (searchQuery) {
     fetch(`https://www.omdbapi.com/?s=${searchQuery}&apikey=${apiKey}`)
       .then((response) => response.json())
       .then((data) => {
-        const filteredMovies = data.Search.filter((movie) =>
-          genreFilter ? movie.Genre.includes(genreFilter) : true
+        let filteredMovies = data.Search || [];
+        filteredMovies = filteredMovies.filter(
+          (movie) =>
+            (genreFilter ? movie.Genre.includes(genreFilter) : true) &&
+            (yearFilter ? movie.Year.includes(yearFilter) : true) &&
+            (ratingFilter ? parseFloat(movie.imdbRating) >= ratingFilter : true)
         );
         displayMovies(filteredMovies);
         updateSearchHistory(searchQuery);
       })
       .catch((error) => console.error("Error fetching data:", error));
   }
+});
+
+document
+  .getElementById("toggleDarkMode")
+  .addEventListener("click", function () {
+    document.body.classList.toggle("dark-mode");
+  });
+
+document
+  .getElementById("searchWatchlist")
+  .addEventListener("input", function () {
+    const query = this.value.toLowerCase();
+    const filteredWatchlist = watchlist.filter((movie) =>
+      movie.Title.toLowerCase().includes(query)
+    );
+    displayWatchlist(filteredWatchlist);
+  });
+
+document.getElementById("sortWatchlist").addEventListener("click", function () {
+  watchlist.sort((a, b) => a.Title.localeCompare(b.Title));
+  displayWatchlist(watchlist);
 });
 
 function displayMovies(movies) {
@@ -63,9 +91,12 @@ function displayMovieDetails(movie) {
         <p><strong>Director:</strong> ${movie.Director}</p>
         <p><strong>Actors:</strong> ${movie.Actors}</p>
         <p><strong>Plot:</strong> ${movie.Plot}</p>
+        <p><strong>Box Office:</strong> ${movie.BoxOffice}</p>
+        <p><strong>Runtime:</strong> ${movie.Runtime}</p>
         <img src="${movie.Poster}" alt="${movie.Title}">
     `;
   document.getElementById("ratingMovieId").value = movie.imdbID;
+  document.getElementById("userRating").value = userRatings[movie.imdbID] || "";
   document.getElementById("addToWatchlistButton").style.display =
     watchlist.some((item) => item.imdbID === movie.imdbID) ? "none" : "inline";
   document.getElementById("removeFromWatchlistButton").style.display =
@@ -84,34 +115,32 @@ function fetchMovieTrailer(title) {
         document.getElementById(
           "movieTrailer"
         ).src = `https://www.youtube.com/embed/${videoId}`;
-        document.getElementById("trailerLink").style.display = "none"; // Hide link if trailer is available
+        document.getElementById("trailerLink").style.display = "none";
       } else {
         document.getElementById(
           "trailerLink"
         ).href = `https://www.youtube.com/results?search_query=${title}+trailer`;
-        document.getElementById("trailerLink").style.display = "block"; // Show link if no trailer is found
+        document.getElementById("trailerLink").style.display = "block";
       }
     })
     .catch((error) => console.error("Error fetching trailer:", error));
 }
 
 function openModal() {
-  document.getElementById("movieModal").style.display = "block";
+  const modal = document.getElementById("movieModal");
+  modal.style.display = "block";
+  modal.querySelector(".modal-content").classList.add("fade-in");
 }
 
 document.getElementById("closeModal").addEventListener("click", function () {
-  document.getElementById("movieModal").style.display = "none";
+  const modal = document.getElementById("movieModal");
+  modal.querySelector(".modal-content").classList.remove("fade-in");
+  modal.querySelector(".modal-content").classList.add("fade-out");
+  setTimeout(() => {
+    modal.style.display = "none";
+    modal.querySelector(".modal-content").classList.remove("fade-out");
+  }, 300);
 });
-
-document
-  .getElementById("ratingFormElement")
-  .addEventListener("submit", function (event) {
-    event.preventDefault();
-    const rating = document.getElementById("rating").value;
-    const movieId = document.getElementById("ratingMovieId").value;
-    // Save rating to local storage or server here
-    console.log(`Rated movie ${movieId} with rating ${rating}`);
-  });
 
 document
   .getElementById("addToWatchlistButton")
@@ -123,7 +152,11 @@ document
         if (!watchlist.some((item) => item.imdbID === movie.imdbID)) {
           watchlist.push(movie);
           localStorage.setItem("watchlist", JSON.stringify(watchlist));
-          updateWatchlist();
+          document.getElementById("addToWatchlistButton").style.display =
+            "none";
+          document.getElementById("removeFromWatchlistButton").style.display =
+            "inline";
+          displayWatchlist(watchlist);
         }
       })
       .catch((error) => console.error("Error adding to watchlist:", error));
@@ -135,40 +168,55 @@ document
     const movieId = document.getElementById("ratingMovieId").value;
     watchlist = watchlist.filter((movie) => movie.imdbID !== movieId);
     localStorage.setItem("watchlist", JSON.stringify(watchlist));
-    updateWatchlist();
-    document.getElementById("addToWatchlistButton").style.display = "inline";
     document.getElementById("removeFromWatchlistButton").style.display = "none";
+    document.getElementById("addToWatchlistButton").style.display = "inline";
+    displayWatchlist(watchlist);
   });
 
-document
-  .getElementById("clearHistoryButton")
-  .addEventListener("click", function () {
-    document.getElementById("searchHistory").innerHTML = "";
-  });
+document.getElementById("submitRating").addEventListener("click", function () {
+  const movieId = document.getElementById("ratingMovieId").value;
+  const rating = document.getElementById("userRating").value;
+  if (rating >= 1 && rating <= 10) {
+    userRatings[movieId] = rating;
+    localStorage.setItem("userRatings", JSON.stringify(userRatings));
+    alert("Rating submitted!");
+  } else {
+    alert("Please enter a rating between 1 and 10.");
+  }
+});
 
-function updateSearchHistory(query) {
-  const searchHistory = document.getElementById("searchHistory");
-  const searchItem = document.createElement("li");
-  searchItem.textContent = query;
-  searchItem.addEventListener("click", () => {
-    document.getElementById("searchInput").value = query;
-    document.getElementById("searchButton").click();
-  });
-  searchHistory.insertBefore(searchItem, searchHistory.firstChild); // Add new search to the top
-}
-
-function updateWatchlist() {
+function displayWatchlist(movies) {
   const watchlistElement = document.getElementById("watchlist");
   watchlistElement.innerHTML = "";
-  if (watchlist.length > 0) {
-    watchlist.forEach((movie) => {
-      const watchlistItem = document.createElement("li");
-      watchlistItem.textContent = movie.Title;
-      watchlistElement.appendChild(watchlistItem);
+  if (movies && movies.length > 0) {
+    movies.forEach((movie) => {
+      const movieItem = document.createElement("li");
+      movieItem.innerHTML = `
+                <img src="${movie.Poster}" alt="${movie.Title}">
+                <div>
+                    <p>${movie.Title} (${movie.Year})</p>
+                    <p>Your Rating: ${
+                      userRatings[movie.imdbID] || "Not Rated"
+                    }</p>
+                </div>
+            `;
+      movieItem.addEventListener("click", () => {
+        fetchMovieDetails(movie.imdbID);
+      });
+      watchlistElement.appendChild(movieItem);
     });
   } else {
-    watchlistElement.innerHTML = "<p>No movies in watchlist.</p>";
+    watchlistElement.innerHTML = "<p>Your watchlist is empty.</p>";
   }
 }
 
-updateWatchlist();
+function updateSearchHistory(query) {
+  const searchHistory = document.getElementById("searchHistory");
+  const historyItem = document.createElement("li");
+  historyItem.textContent = query;
+  historyItem.addEventListener("click", function () {
+    document.getElementById("searchInput").value = query;
+    document.getElementById("searchButton").click();
+  });
+  searchHistory.appendChild(historyItem);
+}
