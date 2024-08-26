@@ -1,6 +1,9 @@
 # Movie Database
 
 A web app to search and manage movies, with features including dark mode, watchlist management, and movie ratings.
+## Live Preview
+
+[Live Preview](https://movie-database-mocha.vercel.app/)
 
 ## Features
 
